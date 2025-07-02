@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { UsersContext } from '../App';
+import { useAuth } from '../components/AuthContext';
 
 function isFutureOrToday(dateStr) {
   if (!dateStr) return false;
@@ -11,15 +12,33 @@ function isFutureOrToday(dateStr) {
   d.setHours(0,0,0,0);
   return d >= today;
 }
+function isPast(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date();
+  const d = new Date(dateStr);
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return d < today;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { users } = useContext(UsersContext);
+  const { isLoggedIn } = useAuth();
+
+  // Simulate current user by email (in real app, use auth user info)
+  // For demo, use the last registered user if logged in
+  const currentUser = isLoggedIn && users.length > 0 ? users[users.length - 1] : null;
 
   // Upcoming bookings: users with a booking date today or in the future
   const upcoming = users
     .filter(u => u.bookingDate && u.bookingSlot && isFutureOrToday(u.bookingDate))
     .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
+
+  // Booking history: for current user, bookings in the past
+  const history = currentUser && currentUser.bookingDate && currentUser.bookingSlot && isPast(currentUser.bookingDate)
+    ? [currentUser]
+    : [];
 
   return (
     <div className="dashboard-page-container">
@@ -51,6 +70,30 @@ const Dashboard = () => {
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+        <div className="history-section">
+          <h3>Booking History</h3>
+          {isLoggedIn ? (
+            history.length === 0 ? (
+              <div className="placeholder-card">No past bookings.</div>
+            ) : (
+              <ul>
+                {history.map((user, idx) => (
+                  <li key={user.email + idx} className="history-card">
+                    <b>{user.name}</b> ({user.email})<br/>
+                    <span style={{ color: '#64748b' }}>{user.profession}</span><br/>
+                    <span style={{ fontSize: '0.97em' }}>{user.description}</span><br/>
+                    <span style={{ color: '#4f46e5', fontWeight: 500 }}>Slot: {user.bookingSlot}</span><br/>
+                    <span style={{ color: '#dc2626', fontWeight: 600 }}>
+                      {user.bookingDate}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : (
+            <div className="placeholder-card">Login to view your booking history.</div>
           )}
         </div>
         <div className="users-list">
@@ -167,6 +210,30 @@ const Dashboard = () => {
   color: #3730a3;
   box-shadow: 0 1px 6px rgba(79,70,229,0.04);
 }
+.history-section {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+.history-section h3 {
+  color: #3730a3;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+.history-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.history-card {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #64748b;
+  box-shadow: 0 1px 6px rgba(79,70,229,0.04);
+}
 .users-list {
   width: 100%;
   margin-top: 1.5rem;
@@ -213,7 +280,7 @@ const Dashboard = () => {
     padding: 0.7rem 0.3rem;
     font-size: 0.95rem;
   }
-  .user-card, .upcoming-card {
+  .user-card, .upcoming-card, .history-card {
     font-size: 0.95rem;
   }
   .dashboard-stats {
