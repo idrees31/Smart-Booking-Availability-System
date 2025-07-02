@@ -22,8 +22,8 @@ const Login = () => {
   padding: 4.5rem 2rem 2.5rem 2rem;
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(79,70,229,0.08);
-  width: 100%;
-  max-width: 400px;
+  width: 90vw;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,7 +40,7 @@ const Login = () => {
 }
 @media (max-width: 900px) {
   .login-content {
-    max-width: 95vw;
+    max-width: 98vw;
     padding: 1.2rem 0.5rem;
   }
 }

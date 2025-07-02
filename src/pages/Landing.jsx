@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
+// import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { UsersContext } from '../App';
 
@@ -73,7 +73,7 @@ const Landing = () => {
 
   return (
     <div className="landing-container">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="landing-content">
         <h1>Smart Booking & Availability System</h1>
         <p className="landing-desc">
@@ -97,44 +97,32 @@ const Landing = () => {
             ))}
           </div>
         </div>
-        <div className="testimonials-section">
-          <h3>What our users say</h3>
-          <div className="testimonial-card">
-            <div className="testimonial-text">“{testimonials[testimonialIdx].text}”</div>
-            <div className="testimonial-user">
-              <span className="testimonial-name">{testimonials[testimonialIdx].name}</span>
-              <span className="testimonial-profession">{testimonials[testimonialIdx].profession}</span>
-            </div>
-            <div className="testimonial-dots">
-              {testimonials.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={idx === testimonialIdx ? 'dot active' : 'dot'}
-                  onClick={() => setTestimonialIdx(idx)}
-                ></span>
-              ))}
-            </div>
-          </div>
-        </div>
         <style>{`
 .landing-container {
-  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
 }
 .landing-content {
   background: #fff;
-  padding: 4.5rem 2rem 2.5rem 2rem;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(79,70,229,0.08);
-  width: 100%;
-  max-width: 480px;
+  padding: 5.5rem 3.5rem 3.5rem 3.5rem;
+  border-radius: 22px;
+  box-shadow: 0 2px 24px rgba(79,70,229,0.10);
+  width: 96vw;
+  max-width: 1100px;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
   justify-content: center;
-  margin: 2.5rem auto 0 auto;
   animation: fadein 0.7s;
 }
 @keyframes fadein {
@@ -233,92 +221,37 @@ const Landing = () => {
   color: #64748b;
   font-size: 0.98rem;
 }
-.testimonials-section {
-  width: 100%;
-  margin-top: 2.2rem;
-  text-align: center;
-}
-.testimonials-section h3 {
-  color: #3730a3;
-  margin-bottom: 1.2rem;
-  font-size: 1.1rem;
+.cta-btn {
+  background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  border: none;
+  padding: 0.9rem 2.2rem;
+  border-radius: 25px;
+  font-size: 1.15rem;
   font-weight: 700;
-}
-.testimonial-card {
-  background: #e0e7ff;
-  border-radius: 14px;
-  padding: 1.3rem 1.2rem 1.1rem 1.2rem;
-  box-shadow: 0 1px 6px rgba(79,70,229,0.04);
-  margin: 0 auto;
-  max-width: 350px;
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: fadein 0.7s;
-}
-.testimonial-text {
-  color: #3730a3;
-  font-size: 1.08rem;
-  margin-bottom: 0.7rem;
-  font-style: italic;
-}
-.testimonial-user {
-  color: #4f46e5;
-  font-weight: 600;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-.testimonial-profession {
-  color: #64748b;
-  font-size: 0.97em;
-  font-weight: 400;
-  margin-left: 0.3rem;
-}
-.testimonial-dots {
-  display: flex;
-  gap: 0.4rem;
-  margin-top: 0.2rem;
-}
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #c7d2fe;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  width: auto;
+  max-width: 240px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.10);
+  letter-spacing: 0.5px;
 }
-.dot.active {
-  background: #4f46e5;
+.cta-btn:hover {
+  background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
+  box-shadow: 0 8px 24px rgba(79,70,229,0.13);
+  transform: translateY(-2px) scale(1.04);
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .landing-content {
-    max-width: 95vw;
-    padding: 1.2rem 0.5rem;
-  }
-  .cta-btn {
-    max-width: 100%;
-  }
-  .how-steps {
-    gap: 0.7rem;
+    max-width: 99vw;
+    padding: 2.2rem 0.7rem;
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .landing-content {
-    padding: 1rem 0.2rem;
-  }
-  .cta-btn {
-    font-size: 0.95rem;
-    padding: 0.6rem 1.1rem;
-  }
-  .how-step {
-    min-width: 90px;
-    max-width: 100vw;
-    padding: 0.7rem 0.5rem;
-  }
-  .testimonial-card {
-    padding: 0.7rem 0.3rem 0.7rem 0.3rem;
-    font-size: 0.95rem;
+    padding: 1.2rem 0.2rem;
+    margin: 1.2rem auto 0 auto;
   }
 }
 `}</style>

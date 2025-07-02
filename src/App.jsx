@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -34,6 +34,7 @@ const App = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
         {/* </BookingContext.Provider> */}
