@@ -1,9 +1,11 @@
 import React from 'react';
+import Navbar from '../components/Navbar';
 import './Booking.css';
 
 const Booking = () => {
   return (
     <div className="booking-container">
+      <Navbar />
       <div className="booking-content">
         <h2>Book a Slot</h2>
         <div className="calendar-placeholder">

@@ -1,9 +1,11 @@
 import React from 'react';
+import Navbar from '../components/Navbar';
 import './Profile.css';
 
 const Profile = () => {
   return (
     <div className="profile-container">
+      <Navbar />
       <form className="profile-form">
         <h2>Create Your Booking Profile</h2>
         <div className="form-group">
