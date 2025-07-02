@@ -14,21 +14,12 @@ const Login = () => {
       <style>{`
 .login-container {
   min-height: 100vh;
-  min-width: 100vw;
   width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-  position: fixed;
-  top: 0;
-  left: 0;
-  overflow: hidden;
 }
 .login-content {
   background: #fff;
-  padding: 2.5rem 2rem;
+  padding: 4.5rem 2rem 2.5rem 2rem;
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(79,70,229,0.08);
   width: 100%;
@@ -38,6 +29,7 @@ const Login = () => {
   align-items: center;
   box-sizing: border-box;
   justify-content: center;
+  margin: 2.5rem auto 0 auto;
 }
 .login-content h2 {
   color: #4f46e5;

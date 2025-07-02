@@ -3,9 +3,23 @@ import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { UsersContext } from '../App';
 
+function isFutureOrToday(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date();
+  const d = new Date(dateStr);
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return d >= today;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { users } = useContext(UsersContext);
+
+  // Upcoming bookings: users with a booking date today or in the future
+  const upcoming = users
+    .filter(u => u.bookingDate && u.bookingSlot && isFutureOrToday(u.bookingDate))
+    .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
 
   return (
     <div className="dashboard-page-container">
@@ -18,6 +32,26 @@ const Dashboard = () => {
             <span className="stat-value">{users.filter(u => u.bookingDate && u.bookingSlot).length}</span>
           </div>
           <button className="cta-btn go-book-btn" onClick={() => navigate('/profile')}>Go Book</button>
+        </div>
+        <div className="upcoming-section">
+          <h3>Upcoming Bookings</h3>
+          {upcoming.length === 0 ? (
+            <div className="placeholder-card">No upcoming bookings.</div>
+          ) : (
+            <ul>
+              {upcoming.map((user, idx) => (
+                <li key={user.email + idx} className="upcoming-card">
+                  <b>{user.name}</b> ({user.email})<br/>
+                  <span style={{ color: '#64748b' }}>{user.profession}</span><br/>
+                  <span style={{ fontSize: '0.97em' }}>{user.description}</span><br/>
+                  <span style={{ color: '#4f46e5', fontWeight: 500 }}>Slot: {user.bookingSlot}</span><br/>
+                  <span style={{ color: '#16a34a', fontWeight: 600 }}>
+                    {user.bookingDate}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="users-list">
           <h3>Registered Users</h3>
@@ -108,6 +142,31 @@ const Dashboard = () => {
 .go-book-btn:hover {
   background: #3730a3;
 }
+.upcoming-section {
+  width: 100%;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.upcoming-section h3 {
+  color: #3730a3;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+.upcoming-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.upcoming-card {
+  background: #e0e7ff;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #3730a3;
+  box-shadow: 0 1px 6px rgba(79,70,229,0.04);
+}
 .users-list {
   width: 100%;
   margin-top: 1.5rem;
@@ -154,7 +213,7 @@ const Dashboard = () => {
     padding: 0.7rem 0.3rem;
     font-size: 0.95rem;
   }
-  .user-card {
+  .user-card, .upcoming-card {
     font-size: 0.95rem;
   }
   .dashboard-stats {
