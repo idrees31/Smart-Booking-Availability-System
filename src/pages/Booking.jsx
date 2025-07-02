@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Navbar from '../components/Navbar';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useNavigate } from 'react-router-dom';
+import { UsersContext } from '../App';
 
 // Example slots mapping (in a real app, this would come from the backend)
 const slotsByDate = {
@@ -19,9 +20,45 @@ function formatDate(date) {
 
 const Booking = () => {
   const [date, setDate] = useState(new Date());
+  const [bookedSlots, setBookedSlots] = useState({}); // { 'YYYY-MM-DD': ['slot', ...] }
+  const [successMsg, setSuccessMsg] = useState('');
+  const [selectedSlot, setSelectedSlot] = useState('');
   const navigate = useNavigate();
+  const { users, setUsers } = useContext(UsersContext);
+
   const selectedDateStr = formatDate(date);
   const slots = slotsByDate[selectedDateStr] || [];
+  const bookedForDate = bookedSlots[selectedDateStr] || [];
+
+  const handleBook = (slot) => {
+    setBookedSlots((prev) => ({
+      ...prev,
+      [selectedDateStr]: [...(prev[selectedDateStr] || []), slot],
+    }));
+    setSelectedSlot(slot);
+    setSuccessMsg(`You have booked ${slot} on ${date.toLocaleDateString()}`);
+    setTimeout(() => setSuccessMsg(''), 2500);
+  };
+
+  const allBooked = slots.length > 0 && slots.every((slot) => bookedForDate.includes(slot));
+
+  const handleFinished = () => {
+    // Update the last registered user with booking info
+    if (selectedSlot) {
+      setUsers(prev => {
+        const updated = [...prev];
+        if (updated.length > 0) {
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            bookingDate: selectedDateStr,
+            bookingSlot: selectedSlot,
+          };
+        }
+        return updated;
+      });
+    }
+    navigate('/dashboard');
+  };
 
   return (
     <div className="booking-container">
@@ -41,22 +78,35 @@ const Booking = () => {
         <div className="selected-date">
           Selected Date: <b>{date.toLocaleDateString()}</b>
         </div>
+        {successMsg && (
+          <div className="placeholder-card" style={{ color: '#16a34a', marginBottom: '1rem' }}>{successMsg}</div>
+        )}
         <div className="slots-list">
           <h3>Available Slots</h3>
           {slots.length > 0 ? (
-            <ul>
-              {slots.map((slot, idx) => (
-                <li key={slot + idx}>
-                  {slot} <button className="cta-btn book-btn">Book</button>
-                </li>
-              ))}
-            </ul>
+            allBooked ? (
+              <div className="placeholder-card">All slots are booked for this date.</div>
+            ) : (
+              <ul>
+                {slots.map((slot, idx) => (
+                  <li key={slot + idx}>
+                    {slot}{' '}
+                    {bookedForDate.includes(slot) || selectedSlot === slot ? (
+                      <span style={{ color: '#64748b', fontWeight: 500 }}>Booked</span>
+                    ) : (
+                      <button className="cta-btn" onClick={() => handleBook(slot)}>Book</button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )
           ) : (
-            <div style={{ color: '#64748b', textAlign: 'center', margin: '1rem 0' }}>
+            <div className="placeholder-card" style={{ color: '#64748b', textAlign: 'center', margin: '1rem 0' }}>
               No slots available for this date.
             </div>
           )}
         </div>
+        <button className="cta-btn finished-btn" style={{marginTop: '2rem'}} onClick={handleFinished} disabled={!selectedSlot}>Finished</button>
       </div>
       <style>{`
 .booking-container {
@@ -171,6 +221,18 @@ const Booking = () => {
 }
 .cta-btn:hover {
   background: #3730a3;
+}
+.finished-btn {
+  margin-top: 2rem;
+  background: #16a34a;
+}
+.finished-btn:disabled {
+  background: #a7f3d0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+.finished-btn:hover:enabled {
+  background: #15803d;
 }
 .placeholder-card {
   background: #e0e7ff;

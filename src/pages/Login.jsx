@@ -1,32 +1,16 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../components/AuthContext';
+import Navbar from '../components/Navbar';
 
 const Login = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    login();
-    navigate('/dashboard');
-  };
-
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>Login to SmartBooking</h2>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email" required />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required />
-        </div>
-        <button type="submit" className="cta-btn login-btn">Login</button>
-        <p className="login-link">Don't have an account? <Link to="/signup">Sign up</Link></p>
-      </form>
+      <Navbar />
+      <div className="login-content">
+        <h2>Login No Longer Required</h2>
+        <p style={{ color: '#64748b', textAlign: 'center' }}>
+          Authentication is not needed for this demo. Please use the Dashboard and Booking features directly.
+        </p>
+      </div>
       <style>{`
 .login-container {
   min-height: 100vh;
@@ -42,79 +26,35 @@ const Login = () => {
   left: 0;
   overflow: hidden;
 }
-.login-form {
+.login-content {
   background: #fff;
   padding: 2.5rem 2rem;
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(79,70,229,0.08);
   width: 100%;
-  max-width: 350px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
+  justify-content: center;
 }
-.login-form h2 {
+.login-content h2 {
   color: #4f46e5;
-  margin-bottom: 2rem;
-  font-size: 1.7rem;
+  font-size: 1.3rem;
   font-weight: bold;
-}
-.form-group {
-  width: 100%;
-  margin-bottom: 1.3rem;
-  display: flex;
-  flex-direction: column;
-}
-.form-group label {
-  color: #374151;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-.form-group input {
-  padding: 0.7rem 1rem;
-  border: 1px solid #c7d2fe;
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  transition: border 0.2s;
-}
-.form-group input:focus {
-  border: 1.5px solid #4f46e5;
-}
-.cta-btn.login-btn {
-  width: 100%;
-  margin-top: 0.5rem;
   margin-bottom: 1.2rem;
-  background: #4f46e5;
-  color: #fff;
-  border: none;
-  padding: 0.7rem 1.5rem;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+  text-align: center;
 }
-.cta-btn.login-btn:hover {
-  background: #3730a3;
-}
-.login-link {
-  color: #64748b;
-  font-size: 0.98rem;
-}
-.login-link a {
-  color: #4f46e5;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.login-link a:hover {
-  color: #3730a3;
-}
-@media (max-width: 500px) {
-  .login-form {
-    padding: 1.2rem 0.5rem;
+@media (max-width: 900px) {
+  .login-content {
     max-width: 95vw;
+    padding: 1.2rem 0.5rem;
+  }
+}
+@media (max-width: 600px) {
+  .login-content {
+    padding: 1rem 0.2rem;
   }
 }
 `}</style>
