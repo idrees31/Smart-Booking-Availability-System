@@ -1,11 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
 import './Login.css';
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    login();
+    navigate('/dashboard');
+  };
+
   return (
     <div className="login-container">
-      <form className="login-form">
+      <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login to SmartBooking</h2>
         <div className="form-group">
           <label htmlFor="email">Email</label>

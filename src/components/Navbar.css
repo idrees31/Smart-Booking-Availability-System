@@ -50,6 +50,23 @@
   color: #3730a3;
 }
 
+.logout-btn {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: color 0.2s;
+  text-decoration: underline;
+}
+.logout-btn:hover {
+  color: #3730a3;
+  text-decoration: underline;
+}
+
 @media (max-width: 700px) {
   .navbar {
     flex-direction: column;
