@@ -23,6 +23,7 @@ const Admin = () => {
                 <th>Slots</th>
                 <th>Booking Date</th>
                 <th>Booking Slot</th>
+                <th>Feedback</th>
               </tr>
             </thead>
             <tbody>
@@ -37,6 +38,21 @@ const Admin = () => {
                     <td>{user.slots}</td>
                     <td>{user.bookingDate || <span style={{ color: '#dc2626' }}>—</span>}</td>
                     <td>{user.bookingSlot || <span style={{ color: '#dc2626' }}>—</span>}</td>
+                    <td>
+                      {user.feedback ? (
+                        <span>
+                          <span style={{ color: '#facc15', fontSize: '1.1em', letterSpacing: '1px' }}>
+                            {'★'.repeat(user.feedback.rating)}
+                            <span style={{ color: '#e0e7ff' }}>{'★'.repeat(5 - user.feedback.rating)}</span>
+                          </span>
+                          {user.feedback.comment && (
+                            <div style={{ color: '#64748b', fontSize: '0.97em', marginTop: 2 }}>{user.feedback.comment}</div>
+                          )}
+                        </span>
+                      ) : (
+                        <span style={{ color: '#dc2626' }}>—</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}

@@ -23,6 +23,10 @@ const Booking = () => {
   const [bookedSlots, setBookedSlots] = useState({}); // { 'YYYY-MM-DD': ['slot', ...] }
   const [successMsg, setSuccessMsg] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const navigate = useNavigate();
   const { users, setUsers } = useContext(UsersContext);
 
@@ -57,7 +61,29 @@ const Booking = () => {
         return updated;
       });
     }
-    navigate('/dashboard');
+    setShowFeedback(true);
+  };
+
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    setUsers(prev => {
+      const updated = [...prev];
+      if (updated.length > 0) {
+        updated[updated.length - 1] = {
+          ...updated[updated.length - 1],
+          feedback: { rating, comment },
+        };
+      }
+      return updated;
+    });
+    setFeedbackSubmitted(true);
+    setTimeout(() => {
+      setShowFeedback(false);
+      setFeedbackSubmitted(false);
+      setRating(0);
+      setComment('');
+      navigate('/dashboard');
+    }, 1200);
   };
 
   return (
@@ -127,6 +153,36 @@ const Booking = () => {
           )}
         </div>
         <button className="cta-btn finished-btn" style={{marginTop: '2rem'}} onClick={handleFinished} disabled={!selectedSlot}>Finished</button>
+        {showFeedback && (
+          <div className="feedback-modal-bg">
+            <div className="feedback-modal">
+              <h3>Rate Your Booking</h3>
+              <form onSubmit={handleFeedbackSubmit}>
+                <div className="star-rating">
+                  {[1,2,3,4,5].map(star => (
+                    <span
+                      key={star}
+                      className={star <= rating ? 'star filled' : 'star'}
+                      onClick={() => setRating(star)}
+                      role="button"
+                      tabIndex={0}
+                    >&#9733;</span>
+                  ))}
+                </div>
+                <textarea
+                  className="feedback-comment"
+                  placeholder="Leave a comment (optional)"
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  rows={3}
+                />
+                <button className="cta-btn" type="submit" disabled={rating === 0 || feedbackSubmitted}>
+                  {feedbackSubmitted ? 'Thank you!' : 'Submit Feedback'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
       <style>{`
 .booking-container {
@@ -282,6 +338,65 @@ const Booking = () => {
 .booking-calendar .react-calendar__tile {
   position: relative;
   padding-bottom: 1.2em;
+}
+.feedback-modal-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30,41,59,0.18);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.feedback-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(79,70,229,0.13);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  max-width: 350px;
+  width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: modal-fadein 0.3s;
+}
+@keyframes modal-fadein {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.feedback-modal h3 {
+  color: #4f46e5;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.star-rating {
+  display: flex;
+  gap: 0.3rem;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+.star {
+  color: #e0e7ff;
+  transition: color 0.2s;
+}
+.star.filled {
+  color: #facc15;
+}
+.feedback-comment {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #c7d2fe;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 1.1rem;
+  resize: none;
+  outline: none;
+  transition: border 0.2s;
+}
+.feedback-comment:focus {
+  border: 1.5px solid #4f46e5;
 }
 `}</style>
     </div>
