@@ -19,6 +19,7 @@ const Navbar = () => {
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/profile', label: 'Profile' },
     { to: '/booking', label: 'Booking' },
+    { to: '/admin', label: 'Admin' },
   ];
 
   return (
