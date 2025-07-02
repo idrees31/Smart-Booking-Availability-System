@@ -73,6 +73,26 @@ const Booking = () => {
             onChange={setDate}
             value={date}
             className="booking-calendar"
+            tileContent={({ date }) => {
+              const dateStr = formatDate(date);
+              const slots = slotsByDate[dateStr] || [];
+              const booked = bookedSlots[dateStr] || [];
+              if (!slots.length) return null;
+              let color = '#22c55e'; // green
+              if (booked.length === slots.length) color = '#dc2626'; // red
+              else if (booked.length > 0) color = '#eab308'; // yellow
+              return (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: color,
+                  }}></span>
+                </div>
+              );
+            }}
           />
         </div>
         <div className="selected-date">
@@ -258,6 +278,10 @@ const Booking = () => {
     align-items: flex-start;
     gap: 0.5rem;
   }
+}
+.booking-calendar .react-calendar__tile {
+  position: relative;
+  padding-bottom: 1.2em;
 }
 `}</style>
     </div>
