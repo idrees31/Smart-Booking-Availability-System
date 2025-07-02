@@ -32,7 +32,7 @@ function isTodayOrTomorrow(dateStr) {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { users } = useContext(UsersContext);
+  const { users, setUsers } = useContext(UsersContext);
   const { isLoggedIn } = useAuth();
   const [showNotif, setShowNotif] = useState(true);
 
@@ -60,6 +60,21 @@ const Dashboard = () => {
       return () => clearTimeout(timer);
     }
   }, [hasUpcomingSoon, showNotif]);
+
+  // Cancel booking for current user
+  const handleCancelBooking = () => {
+    if (currentUser) {
+      setUsers(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          ...updated[updated.length - 1],
+          bookingDate: undefined,
+          bookingSlot: undefined,
+        };
+        return updated;
+      });
+    }
+  };
 
   return (
     <div className="dashboard-page-container">
@@ -95,6 +110,9 @@ const Dashboard = () => {
                   <span style={{ color: '#16a34a', fontWeight: 600 }}>
                     {user.bookingDate}
                   </span>
+                  {isLoggedIn && currentUser && user.email === currentUser.email && (
+                    <button className="cancel-btn" onClick={handleCancelBooking}>Cancel</button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -328,6 +346,21 @@ const Dashboard = () => {
   font-size: 1rem;
   margin-bottom: 0.5rem;
   box-sizing: border-box;
+}
+.cancel-btn {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1.1rem;
+  border-radius: 18px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.7rem;
+  transition: background 0.2s;
+}
+.cancel-btn:hover {
+  background: #b91c1c;
 }
 @media (max-width: 900px) {
   .dashboard-content {
