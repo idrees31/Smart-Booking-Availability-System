@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { UsersContext } from '../App';
@@ -20,11 +20,21 @@ function isPast(dateStr) {
   d.setHours(0,0,0,0);
   return d < today;
 }
+function isTodayOrTomorrow(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date();
+  const d = new Date(dateStr);
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  const diff = (d - today) / (1000 * 60 * 60 * 24);
+  return diff === 0 || diff === 1;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { users } = useContext(UsersContext);
   const { isLoggedIn } = useAuth();
+  const [showNotif, setShowNotif] = useState(true);
 
   // Simulate current user by email (in real app, use auth user info)
   // For demo, use the last registered user if logged in
@@ -40,10 +50,28 @@ const Dashboard = () => {
     ? [currentUser]
     : [];
 
+  // Notification: if current user has a booking today or tomorrow
+  const hasUpcomingSoon = currentUser && currentUser.bookingDate && currentUser.bookingSlot && isTodayOrTomorrow(currentUser.bookingDate);
+
+  // Auto-hide notification after 8 seconds
+  useEffect(() => {
+    if (hasUpcomingSoon && showNotif) {
+      const timer = setTimeout(() => setShowNotif(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasUpcomingSoon, showNotif]);
+
   return (
     <div className="dashboard-page-container">
       <Navbar />
       <div className="dashboard-content">
+        {hasUpcomingSoon && showNotif && (
+          <div className="notif-popup">
+            <span role="img" aria-label="bell">🔔</span>
+            Reminder: You have a booking {isTodayOrTomorrow(currentUser.bookingDate) === 0 ? 'today' : 'tomorrow'} at <b>{currentUser.bookingSlot}</b>!
+            <button className="notif-close" onClick={() => setShowNotif(false)}>&times;</button>
+          </div>
+        )}
         <h2>Dashboard</h2>
         <div className="dashboard-stats">
           <div className="stat-card">
@@ -140,6 +168,41 @@ const Dashboard = () => {
   box-sizing: border-box;
   justify-content: center;
   margin: 2.5rem auto 0 auto;
+}
+.notif-popup {
+  width: 100%;
+  background: linear-gradient(90deg, #e0e7ff 0%, #f1f5f9 100%);
+  color: #3730a3;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(79,70,229,0.08);
+  padding: 1rem 2.5rem 1rem 1.2rem;
+  font-size: 1.08rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+  position: relative;
+  animation: notif-fadein 0.5s;
+}
+@keyframes notif-fadein {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.notif-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.5rem;
+  font-weight: bold;
+  position: absolute;
+  right: 1.2rem;
+  top: 0.7rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.notif-close:hover {
+  color: #dc2626;
 }
 .dashboard-stats {
   display: flex;
