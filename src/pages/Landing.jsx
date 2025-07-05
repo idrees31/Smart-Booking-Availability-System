@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-// import Navbar from '../components/Navbar';
-import { useNavigate } from 'react-router-dom';
-import { UsersContext } from '../App';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
 
 const testimonials = [
   {
@@ -29,7 +28,7 @@ const howItWorks = [
 
 const AnimatedStat = ({ value, label }) => {
   const [count, setCount] = useState(0);
-  useEffect(() => {
+  React.useEffect(() => {
     let start = 0;
     const end = value;
     if (start === end) return;
@@ -54,208 +53,638 @@ const AnimatedStat = ({ value, label }) => {
 };
 
 const Landing = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  const { users } = useContext(UsersContext);
-  const [testimonialIdx, setTestimonialIdx] = useState(0);
 
-  // Calculate stats
-  const totalUsers = users.length;
-  const totalBookings = users.filter(u => u.bookingDate && u.bookingSlot).length;
-  const totalFeedback = users.filter(u => u.feedback).length;
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      navigate('/dashboard');
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
-  // Carousel auto-advance
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTestimonialIdx(idx => (idx + 1) % testimonials.length);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [testimonialIdx]);
+  const handleAuthChoice = (choice) => {
+    setShowAuthModal(false);
+    navigate(choice === 'login' ? '/login' : '/signup');
+  };
 
   return (
-    <div className="landing-container">
-      {/* <Navbar /> */}
+    <div className="landing-page-container">
       <div className="landing-content">
-        <h1>Smart Booking & Availability System</h1>
-        <p className="landing-desc">
-          Effortlessly manage your bookings, slots, and availability. Perfect for professionals like doctors, coaches, and freelancers.
-        </p>
-        <div className="stats-row">
-          <AnimatedStat value={totalUsers} label="Users" />
-          <AnimatedStat value={totalBookings} label="Bookings" />
-          <AnimatedStat value={totalFeedback} label="Feedbacks" />
-        </div>
-        <button className="cta-btn" onClick={() => navigate('/dashboard')}>Get Started</button>
-        <div className="how-section">
-          <h3>How it works</h3>
-          <div className="how-steps">
-            {howItWorks.map((step, idx) => (
-              <div className="how-step" key={idx} style={{ animationDelay: `${idx * 0.12}s` }}>
-                <span className="how-icon">{step.icon}</span>
-                <span className="how-title">{step.title}</span>
-                <span className="how-desc">{step.desc}</span>
-              </div>
-            ))}
+        <div className="hero-section">
+          <div className="hero-icon">🚀</div>
+          <h1 className="hero-title">Smart Booking</h1>
+          <p className="hero-subtitle">
+            The ultimate platform for seamless appointment scheduling and management. 
+            Book your appointments with ease and manage your schedule like never before.
+          </p>
+          <div className="hero-features">
+            <div className="feature-item">
+              <span className="feature-icon">⚡</span>
+              <span>Instant Booking</span>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">📱</span>
+              <span>Mobile Friendly</span>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">🔒</span>
+              <span>Secure & Reliable</span>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">🎯</span>
+              <span>Smart Scheduling</span>
+            </div>
           </div>
         </div>
-        <style>{`
-.landing-container {
+
+        <div className="cta-section">
+          <button className="cta-button" onClick={handleGetStarted}>
+            <span className="btn-icon">🎯</span>
+            <span>Get Started</span>
+          </button>
+          <p className="cta-subtitle">
+            Start managing your bookings in minutes
+          </p>
+        </div>
+
+        <div className="features-section">
+          <h2 className="section-title">Why Choose Smart Booking?</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-card-icon">📅</div>
+              <h3>Easy Scheduling</h3>
+              <p>Book appointments with just a few clicks. Our intuitive interface makes scheduling effortless.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-card-icon">🔔</div>
+              <h3>Smart Reminders</h3>
+              <p>Never miss an appointment with our intelligent reminder system and notifications.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-card-icon">📊</div>
+              <h3>Analytics Dashboard</h3>
+              <p>Track your booking patterns and get insights into your scheduling efficiency.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-card-icon">🔄</div>
+              <h3>Real-time Updates</h3>
+              <p>Get instant updates on booking status and availability across all your devices.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="stats-section">
+          <div className="stat-item">
+            <div className="stat-number">1000+</div>
+            <div className="stat-label">Happy Users</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-number">5000+</div>
+            <div className="stat-label">Bookings Made</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-number">99%</div>
+            <div className="stat-label">Satisfaction Rate</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-number">24/7</div>
+            <div className="stat-label">Support Available</div>
+          </div>
+        </div>
+
+        <div className="footer-section">
+          <p className="footer-text">
+            Ready to transform your booking experience? 
+            <button className="footer-link-btn" onClick={handleGetStarted}> Sign up now</button> and get started!
+          </p>
+        </div>
+      </div>
+
+      {showAuthModal && (
+        <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
+          <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="auth-modal-header">
+              <div className="auth-modal-icon">🔐</div>
+              <h2>Welcome to Smart Booking</h2>
+              <p>Choose how you'd like to get started</p>
+            </div>
+            
+            <div className="auth-options">
+              <div className="auth-option login-option" onClick={() => handleAuthChoice('login')}>
+                <div className="option-icon">👋</div>
+                <div className="option-content">
+                  <h3>I have an account</h3>
+                  <p>Welcome back! Sign in to access your dashboard and bookings.</p>
+                </div>
+                <div className="option-arrow">→</div>
+              </div>
+              
+              <div className="auth-option signup-option" onClick={() => handleAuthChoice('signup')}>
+                <div className="option-icon">🌟</div>
+                <div className="option-content">
+                  <h3>I'm new here</h3>
+                  <p>Join us today! Create your account and start booking appointments.</p>
+                </div>
+                <div className="option-arrow">→</div>
+              </div>
+            </div>
+            
+            <div className="auth-modal-footer">
+              <button className="cancel-btn" onClick={() => setShowAuthModal(false)}>
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`
+.landing-page-container {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.landing-page-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+.landing-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 4rem 3rem;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  width: 90vw;
+  max-width: 1000px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.8s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.hero-section {
+  margin-bottom: 3rem;
+}
+.hero-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.hero-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+.hero-subtitle {
+  color: #64748b;
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero-features {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.8rem 1.2rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.feature-icon {
+  font-size: 1.2rem;
+}
+.cta-section {
+  margin-bottom: 4rem;
+}
+.cta-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  text-decoration: none;
+  padding: 1.2rem 2.5rem;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  border: none;
+  cursor: pointer;
+}
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+}
+.btn-icon {
+  font-size: 1.4rem;
+}
+.cta-subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+.features-section {
+  margin-bottom: 4rem;
+}
+.section-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.feature-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+.feature-card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+.feature-card h3 {
+  color: #1f2937;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.feature-card p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+.stat-item {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #667eea;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+.stat-label {
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.footer-section {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+.footer-text {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+.footer-link-btn:hover {
+  color: #5a67d8;
+  text-decoration: underline;
+}
+
+/* Auth Modal Styles */
+.auth-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
-.landing-content {
-  background: #fff;
-  padding: 5.5rem 3.5rem 3.5rem 3.5rem;
-  border-radius: 22px;
-  box-shadow: 0 2px 24px rgba(79,70,229,0.10);
-  width: 96vw;
-  max-width: 1100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-sizing: border-box;
-  justify-content: center;
-  animation: fadein 0.7s;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-@keyframes fadein {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+.auth-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  width: 90vw;
+  max-width: 600px;
+  animation: slideInScale 0.4s ease-out;
 }
-.landing-content h1 {
-  color: #4f46e5;
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 1.2rem;
-  text-align: center;
-}
-.landing-desc {
-  color: #64748b;
-  font-size: 1.08rem;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-.stats-row {
-  display: flex;
-  gap: 1.2rem;
-  margin-bottom: 2rem;
-  width: 100%;
-  justify-content: center;
-}
-.stat-card-landing {
-  background: #e0e7ff;
-  color: #3730a3;
-  border-radius: 10px;
-  padding: 1rem 1.5rem;
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 600;
-  min-width: 80px;
-  box-shadow: 0 1px 6px rgba(79,70,229,0.04);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: fadein 0.7s;
-}
-.stat-value-landing {
-  font-size: 1.5rem;
-  color: #4f46e5;
-  font-weight: 700;
-}
-.stat-label-landing {
-  font-size: 1rem;
-  color: #64748b;
-  font-weight: 500;
-}
-.how-section {
-  width: 100%;
-  margin: 2.2rem 0 1.5rem 0;
-  text-align: center;
-}
-.how-section h3 {
-  color: #3730a3;
-  margin-bottom: 1.2rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-.how-steps {
-  display: flex;
-  gap: 1.2rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.how-step {
-  background: #f1f5f9;
-  border-radius: 12px;
-  padding: 1.1rem 1.2rem;
-  min-width: 120px;
-  max-width: 180px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 1px 6px rgba(79,70,229,0.04);
-  animation: fadein 0.7s;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.how-step:hover {
-  transform: translateY(-4px) scale(1.04);
-  box-shadow: 0 4px 16px rgba(79,70,229,0.10);
-}
-.how-icon {
-  font-size: 2.1rem;
-  margin-bottom: 0.5rem;
-}
-.how-title {
-  color: #4f46e5;
-  font-weight: 700;
-  margin-bottom: 0.2rem;
-}
-.how-desc {
-  color: #64748b;
-  font-size: 0.98rem;
-}
-.cta-btn {
-  background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
-  color: #fff;
-  border: none;
-  padding: 0.9rem 2.2rem;
-  border-radius: 25px;
-  font-size: 1.15rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-  width: auto;
-  max-width: 240px;
-  margin-bottom: 0.5rem;
-  box-shadow: 0 4px 16px rgba(79,70,229,0.10);
-  letter-spacing: 0.5px;
-}
-.cta-btn:hover {
-  background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
-  box-shadow: 0 8px 24px rgba(79,70,229,0.13);
-  transform: translateY(-2px) scale(1.04);
-}
-@media (max-width: 1100px) {
-  .landing-content {
-    max-width: 99vw;
-    padding: 2.2rem 0.7rem;
+@keyframes slideInScale {
+  from { 
+    transform: scale(0.8); 
+    opacity: 0; 
+  }
+  to { 
+    transform: scale(1); 
+    opacity: 1; 
   }
 }
-@media (max-width: 700px) {
+.auth-modal-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.auth-modal-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s infinite;
+}
+.auth-modal-header h2 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.auth-modal-header p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.auth-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.auth-option {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+.auth-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+.auth-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+}
+.auth-option:hover::before {
+  opacity: 0.1;
+}
+.login-option {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #0ea5e9;
+}
+.signup-option {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+}
+.option-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.option-content {
+  flex: 1;
+  text-align: left;
+}
+.option-content h3 {
+  color: #1f2937;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.option-content p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.option-arrow {
+  font-size: 1.5rem;
+  color: #667eea;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+}
+.auth-option:hover .option-arrow {
+  transform: translateX(5px);
+}
+.auth-modal-footer {
+  text-align: center;
+}
+.cancel-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.cancel-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+@media (max-width: 768px) {
   .landing-content {
-    padding: 1.2rem 0.2rem;
-    margin: 1.2rem auto 0 auto;
+    padding: 3rem 2rem;
+    margin: 1rem;
+  }
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  .hero-features {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .feature-item {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .stat-item {
+    padding: 1rem;
+  }
+  .stat-number {
+    font-size: 2rem;
+  }
+  .cta-button {
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+  }
+  .section-title {
+    font-size: 2rem;
+  }
+  .auth-modal {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  .auth-option {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  .option-content {
+    text-align: center;
+  }
+}
+@media (max-width: 480px) {
+  .landing-content {
+    padding: 2rem 1.5rem;
+  }
+  .hero-title {
+    font-size: 2rem;
+  }
+  .hero-icon {
+    font-size: 3rem;
+  }
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  .cta-button {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+  }
+  .btn-icon {
+    font-size: 1.2rem;
+  }
+  .stats-section {
+    grid-template-columns: 1fr;
+  }
+  .section-title {
+    font-size: 1.8rem;
+  }
+  .auth-modal {
+    padding: 1.5rem;
+  }
+  .auth-modal-header h2 {
+    font-size: 1.5rem;
   }
 }
 `}</style>
-      </div>
     </div>
   );
 };

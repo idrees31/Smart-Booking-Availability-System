@@ -1,135 +1,374 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
 
 const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    setErrors({ ...errors, [e.target.name]: '' });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
+    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, signup logic goes here
-    navigate('/dashboard');
+    const newErrors = validateForm();
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await signup(formData.email, formData.password, formData.name);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ general: 'Failed to create account. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="signup-container">
-      <form className="signup-form" onSubmit={handleSubmit}>
-        <h2>Create Your Account</h2>
-        <p style={{ color: '#64748b', fontSize: '0.98rem', marginBottom: '1rem' }}>
-          Please fill in your details to sign up and access your dashboard.
-        </p>
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input type="text" id="name" name="name" placeholder="Enter your name" required />
+    <div className="signup-page-container">
+      <div className="signup-content">
+        <div className="signup-header">
+          <div className="header-icon">🌟</div>
+          <h2>Join Us Today</h2>
+          <p className="header-subtitle">
+            Create your account to get started
+          </p>
         </div>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email" required />
+
+        {errors.general && (
+          <div className="error-message">
+            <div className="error-icon">⚠️</div>
+            <span>{errors.general}</span>
+          </div>
+        )}
+
+        <form className="signup-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter your full name"
+              required
+              autoComplete="name"
+            />
+            {errors.name && <span className="form-error">{errors.name}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter your email address"
+              required
+              autoComplete="email"
+            />
+            {errors.email && <span className="form-error">{errors.email}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Create a strong password"
+              required
+              autoComplete="new-password"
+            />
+            {errors.password && <span className="form-error">{errors.password}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm your password"
+              required
+              autoComplete="new-password"
+            />
+            {errors.confirmPassword && <span className="form-error">{errors.confirmPassword}</span>}
+          </div>
+
+          <button 
+            type="submit" 
+            className="signup-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+                <span>Creating account...</span>
+              </div>
+            ) : (
+              <>
+                <span className="btn-icon">🚀</span>
+                <span>Create Account</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="signup-footer">
+          <p className="footer-text">
+            Already have an account?{' '}
+            <Link to="/login" className="footer-link">
+              Sign in here
+            </Link>
+          </p>
         </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Create a password" required />
-        </div>
-        <button type="submit" className="cta-btn signup-btn">Sign Up</button>
-        <p className="signup-link">Already have an account? <a href="/login">Login</a></p>
-      </form>
+      </div>
       <style>{`
-.signup-container {
+.signup-page-container {
   min-height: 100vh;
-  min-width: 100vw;
   width: 100vw;
-  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-  position: fixed;
+}
+.signup-page-container::before {
+  content: '';
+  position: absolute;
   top: 0;
   left: 0;
-  overflow: hidden;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+.signup-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 3rem 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  width: 90vw;
+  max-width: 500px;
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.6s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.signup-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.header-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+.signup-header h2 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.header-subtitle {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.error-message {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  font-weight: 500;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.error-icon {
+  font-size: 1.2rem;
 }
 .signup-form {
-  background: #fff;
-  padding: 2.5rem 2rem;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(79,70,229,0.08);
-  width: 100%;
-  max-width: 350px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  box-sizing: border-box;
-  justify-content: center;
-}
-.signup-form h2 {
-  color: #4f46e5;
+  gap: 1.5rem;
   margin-bottom: 2rem;
-  font-size: 1.7rem;
-  font-weight: bold;
 }
 .form-group {
-  width: 100%;
-  margin-bottom: 1.3rem;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 .form-group label {
   color: #374151;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 .form-group input {
-  padding: 0.7rem 1rem;
-  border: 1px solid #c7d2fe;
-  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   font-size: 1rem;
   outline: none;
-  transition: border 0.2s;
+  transition: all 0.3s ease;
+  background: #f9fafb;
 }
 .form-group input:focus {
-  border: 1.5px solid #4f46e5;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-.cta-btn {
-  background: #4f46e5;
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+.form-error {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+.signup-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   border: none;
-  padding: 0.7rem 1.5rem;
-  border-radius: 25px;
-  font-size: 1rem;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
-  width: 100%;
-  max-width: 200px;
-  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  margin-top: 1rem;
 }
-.cta-btn:hover {
-  background: #3730a3;
+.signup-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
 }
-.signup-link {
-  color: #64748b;
-  font-size: 0.98rem;
+.signup-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
-.signup-link a {
-  color: #4f46e5;
+.btn-icon {
+  font-size: 1.2rem;
+}
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.signup-footer {
+  text-align: center;
+  margin-top: 2rem;
+}
+.footer-text {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0;
+}
+.footer-link {
+  color: #667eea;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
-.signup-link a:hover {
-  color: #3730a3;
+.footer-link:hover {
+  color: #5a67d8;
+  text-decoration: underline;
 }
-@media (max-width: 900px) {
-  .signup-form {
-    max-width: 95vw;
-    padding: 1.2rem 0.5rem;
-  }
-  .cta-btn {
-    max-width: 100%;
-  }
-}
+
 @media (max-width: 600px) {
-  .signup-form {
-    padding: 1rem 0.2rem;
+  .signup-content {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+  .signup-header h2 {
+    font-size: 2rem;
+  }
+  .header-icon {
+    font-size: 2.5rem;
+  }
+  .signup-btn {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
   }
 }
 `}</style>
