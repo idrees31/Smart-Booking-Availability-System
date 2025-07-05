@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "Smart Booking",
+    "version": "1.0.0",
+    "description": "Modern booking management system"
+  },
+  "features": {
+    "authentication": true,
+    "booking": true,
+    "admin": true,
+    "conflict_detection": true
+  },
+  "ui": {
+    "theme": "modern",
+    "animations": true,
+    "responsive": true
+  }
+} 
