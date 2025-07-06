@@ -7,11 +7,26 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import Booking from './pages/Booking';
 import Admin from './pages/Admin';
-import { AuthProvider } from './components/AuthContext';
+import { AuthProvider, useAuth } from './components/AuthContext';
 
 // Create contexts
 export const UsersContext = createContext();
 export const BookingsContext = createContext();
+
+// Protected Route Component
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
+  const { isLoggedIn, isAdmin } = useAuth();
+  
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (requireAdmin && !isAdmin()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
+};
 
 const App = () => {
   // Global state: registered users and bookings
@@ -28,10 +43,38 @@ const App = () => {
               <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/booking" element={<Booking />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/booking" 
+                element={
+                  <ProtectedRoute>
+                    <Booking />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <Admin />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BookingsContext.Provider>

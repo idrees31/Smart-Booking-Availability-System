@@ -1,12 +1,94 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { UsersContext } from '../App';
+import { useAuth } from '../components/AuthContext';
 
 const Admin = () => {
   const { users, setUsers } = useContext(UsersContext);
+  const { isAdmin, isLoggedIn, createAdminAccount } = useAuth();
+  const navigate = useNavigate();
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showCreateAdminModal, setShowCreateAdminModal] = useState(false);
   const [feedback, setFeedback] = useState({ rating: 5, comment: '' });
+  const [newAdminData, setNewAdminData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    adminCode: ''
+  });
+  const [adminErrors, setAdminErrors] = useState({});
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+
+  // Check admin access
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    
+    if (!isAdmin()) {
+      setShowAccessDenied(true);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 3000);
+    }
+  }, [isLoggedIn, isAdmin, navigate]);
+
+  // If not admin, show access denied
+  if (!isLoggedIn || !isAdmin()) {
+    return (
+      <div className="access-denied-container">
+        <div className="access-denied-content">
+          <div className="access-denied-icon">🚫</div>
+          <h2>Access Denied</h2>
+          <p>You don't have permission to access the admin panel.</p>
+          <p>Redirecting to dashboard...</p>
+        </div>
+        <style>{`
+          .access-denied-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+          }
+          .access-denied-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 3rem 2rem;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideUp 0.6s ease-out;
+          }
+          .access-denied-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: shake 0.5s ease-in-out;
+          }
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+          }
+          .access-denied-content h2 {
+            color: #dc2626;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+          }
+          .access-denied-content p {
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   const handleDeleteUser = (email) => {
     setUsers(prev => prev.filter(user => user.email !== email));
@@ -30,6 +112,50 @@ const Admin = () => {
     }
   };
 
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    const errors = {};
+    
+    if (!newAdminData.name) errors.name = 'Name is required';
+    if (!newAdminData.email) errors.email = 'Email is required';
+    if (!newAdminData.password) errors.password = 'Password is required';
+    if (newAdminData.password !== newAdminData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    if (newAdminData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    if (!newAdminData.adminCode) {
+      errors.adminCode = 'Admin code is required';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setAdminErrors(errors);
+      return;
+    }
+
+    try {
+      await createAdminAccount(
+        newAdminData.email, 
+        newAdminData.password, 
+        newAdminData.name, 
+        newAdminData.adminCode
+      );
+      setShowCreateAdminModal(false);
+      setNewAdminData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        adminCode: ''
+      });
+      setAdminErrors({});
+      alert('Admin account created successfully!');
+    } catch (error) {
+      setAdminErrors({ general: error.message });
+    }
+  };
+
   const totalBookings = users.filter(u => u.bookingDate && u.bookingSlot).length;
   const totalUsers = users.length;
   const completedBookings = users.filter(u => {
@@ -49,6 +175,10 @@ const Admin = () => {
           <p className="header-subtitle">
             Manage users and monitor system activity
           </p>
+          <div className="admin-badge">
+            <span className="badge-icon">🛡️</span>
+            <span>Administrator Access</span>
+          </div>
         </div>
 
         <div className="stats-grid">
@@ -82,6 +212,16 @@ const Admin = () => {
               <span className="stat-label">Reviews</span>
             </div>
           </div>
+        </div>
+
+        <div className="admin-actions">
+          <button 
+            className="create-admin-btn"
+            onClick={() => setShowCreateAdminModal(true)}
+          >
+            <span className="btn-icon">👑</span>
+            <span>Create New Admin</span>
+          </button>
         </div>
 
         <div className="admin-section">
@@ -144,12 +284,14 @@ const Admin = () => {
                     <button 
                       className="action-btn view-btn"
                       onClick={() => handleViewFeedback(user)}
+                      title="Add Feedback"
                     >
                       📝
                     </button>
                     <button 
                       className="action-btn delete-btn"
                       onClick={() => handleDeleteUser(user.email)}
+                      title="Delete User"
                     >
                       🗑️
                     </button>
@@ -198,22 +340,132 @@ const Admin = () => {
                     rows={4}
                   />
                 </div>
+                
+                <div className="modal-actions">
+                  <button 
+                    className="cancel-btn"
+                    onClick={() => setShowFeedbackModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="submit-btn"
+                    onClick={handleSubmitFeedback}
+                  >
+                    Submit Feedback
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCreateAdminModal && (
+          <div className="modal-overlay" onClick={() => setShowCreateAdminModal(false)}>
+            <div className="create-admin-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Create New Admin Account</h3>
+                <button 
+                  className="close-btn"
+                  onClick={() => setShowCreateAdminModal(false)}
+                >
+                  ×
+                </button>
               </div>
               
-              <div className="modal-footer">
-                <button 
-                  className="cancel-btn"
-                  onClick={() => setShowFeedbackModal(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="submit-btn"
-                  onClick={handleSubmitFeedback}
-                >
-                  Submit Feedback
-                </button>
-              </div>
+              <form className="modal-content" onSubmit={handleCreateAdmin}>
+                {adminErrors.general && (
+                  <div className="error-message">
+                    <div className="error-icon">⚠️</div>
+                    <span>{adminErrors.general}</span>
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label htmlFor="adminName">Full Name</label>
+                  <input
+                    type="text"
+                    id="adminName"
+                    value={newAdminData.name}
+                    onChange={(e) => setNewAdminData({...newAdminData, name: e.target.value})}
+                    placeholder="Enter admin's full name"
+                    required
+                  />
+                  {adminErrors.name && <span className="form-error">{adminErrors.name}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="adminEmail">Email Address</label>
+                  <input
+                    type="email"
+                    id="adminEmail"
+                    value={newAdminData.email}
+                    onChange={(e) => setNewAdminData({...newAdminData, email: e.target.value})}
+                    placeholder="Enter admin's email"
+                    required
+                  />
+                  {adminErrors.email && <span className="form-error">{adminErrors.email}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="adminPassword">Password</label>
+                  <input
+                    type="password"
+                    id="adminPassword"
+                    value={newAdminData.password}
+                    onChange={(e) => setNewAdminData({...newAdminData, password: e.target.value})}
+                    placeholder="Create a password"
+                    required
+                  />
+                  {adminErrors.password && <span className="form-error">{adminErrors.password}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="adminConfirmPassword">Confirm Password</label>
+                  <input
+                    type="password"
+                    id="adminConfirmPassword"
+                    value={newAdminData.confirmPassword}
+                    onChange={(e) => setNewAdminData({...newAdminData, confirmPassword: e.target.value})}
+                    placeholder="Confirm password"
+                    required
+                  />
+                  {adminErrors.confirmPassword && <span className="form-error">{adminErrors.confirmPassword}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="adminCode">Admin Creation Code</label>
+                  <input
+                    type="password"
+                    id="adminCode"
+                    value={newAdminData.adminCode}
+                    onChange={(e) => setNewAdminData({...newAdminData, adminCode: e.target.value})}
+                    placeholder="Enter admin creation code"
+                    required
+                  />
+                  {adminErrors.adminCode && <span className="form-error">{adminErrors.adminCode}</span>}
+                  <div className="admin-code-hint">
+                    <span className="hint-icon">💡</span>
+                    <span>Use code: <strong>ADMIN2024</strong></span>
+                  </div>
+                </div>
+
+                <div className="modal-actions">
+                  <button 
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => setShowCreateAdminModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="submit-btn"
+                  >
+                    Create Admin Account
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
@@ -221,11 +473,11 @@ const Admin = () => {
       <style>{`
 .admin-page-container {
   min-height: 100vh;
-  width: 100vw;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
+
 .admin-page-container::before {
   content: '';
   position: absolute;
@@ -236,180 +488,241 @@ const Admin = () => {
   background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
   pointer-events: none;
 }
+
 .admin-content {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  padding: 4.5rem 2rem 2.5rem 2rem;
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  width: 90vw;
   max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-sizing: border-box;
-  justify-content: center;
-  margin: 2.5rem auto 0 auto;
+  margin: 0 auto;
+  padding: 100px 2rem 2rem;
   position: relative;
   z-index: 1;
 }
+
 .admin-header {
   text-align: center;
   margin-bottom: 3rem;
+  animation: slideUp 0.6s ease-out;
 }
+
 .header-icon {
-  font-size: 3rem;
+  font-size: 4rem;
   margin-bottom: 1rem;
   animation: bounce 2s infinite;
 }
+
 @keyframes bounce {
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-10px); }
   60% { transform: translateY(-5px); }
 }
+
 .admin-header h2 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
+
 .header-subtitle {
-  color: #64748b;
-  font-size: 1.1rem;
-  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
 }
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.badge-icon {
+  font-size: 1.1rem;
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 3rem;
-  width: 100%;
+  margin-bottom: 2rem;
 }
+
 .stat-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 1rem;
   transition: all 0.3s ease;
+  animation: slideUp 0.6s ease-out;
 }
+
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
+
 .stat-icon {
-  font-size: 2rem;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-radius: 12px;
-  flex-shrink: 0;
+  font-size: 2.5rem;
+  animation: pulse 2s infinite;
 }
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 .stat-content {
   display: flex;
   flex-direction: column;
 }
+
 .stat-value {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: #1f2937;
   line-height: 1;
 }
+
 .stat-label {
   color: #6b7280;
   font-size: 0.9rem;
   font-weight: 500;
-  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.admin-section {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  width: 100%;
-}
-.section-header {
-  text-align: center;
+
+.admin-actions {
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
 }
-.section-header h3 {
-  color: #1f2937;
-  font-size: 1.3rem;
+
+.create-admin-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.create-admin-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+}
+
+.admin-section {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.8s ease-out;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.section-header h3 {
+  font-size: 1.8rem;
+  color: #1f2937;
   margin-bottom: 0.5rem;
 }
+
 .section-header p {
   color: #6b7280;
-  font-size: 0.95rem;
-  margin: 0;
+  font-size: 1rem;
 }
+
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
   color: #6b7280;
 }
-.empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-.empty-state h4 {
-  color: #374151;
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-}
-.empty-state p {
-  margin: 0;
-  font-size: 0.95rem;
-}
+
 .users-table {
-  background: #f8fafc;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
+
 .table-header {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1.5fr 1fr;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr 1fr;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
+  padding: 1rem 1.5rem;
   font-weight: 600;
-  font-size: 0.9rem;
 }
+
 .header-cell {
-  display: flex;
-  align-items: center;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
+
 .table-row {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1.5fr 1fr;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr 1fr;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e5e7eb;
   transition: all 0.3s ease;
 }
+
 .table-row:hover {
-  background: #f1f5f9;
+  background: #f9fafb;
 }
+
 .table-row:last-child {
   border-bottom: none;
 }
+
 .user-cell {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
 }
+
 .user-avatar {
   width: 40px;
   height: 40px;
@@ -420,96 +733,116 @@ const Admin = () => {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 1rem;
-  flex-shrink: 0;
+  font-size: 1.1rem;
 }
+
 .user-info h4 {
   color: #1f2937;
-  margin: 0 0 0.2rem 0;
+  margin-bottom: 0.25rem;
   font-size: 1rem;
-  font-weight: 600;
 }
+
 .user-description {
   color: #6b7280;
+  font-size: 0.85rem;
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
+
 .contact-cell {
   display: flex;
   align-items: center;
 }
+
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  width: 100%;
+  gap: 0.25rem;
 }
+
 .contact-item {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.5rem;
   font-size: 0.85rem;
 }
+
 .contact-label {
   font-size: 0.8rem;
-  opacity: 0.8;
 }
+
 .contact-value {
   color: #374151;
   font-weight: 500;
-  word-break: break-all;
 }
+
 .cell {
   display: flex;
   align-items: center;
   color: #374151;
-  font-size: 0.9rem;
+  font-weight: 500;
 }
+
 .booking-info {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
+
 .booking-date {
+  font-size: 0.85rem;
   color: #059669;
   font-weight: 600;
-  font-size: 0.85rem;
 }
+
 .booking-slot {
-  color: #667eea;
   font-size: 0.8rem;
+  color: #6b7280;
 }
+
 .no-booking {
   color: #9ca3af;
   font-style: italic;
   font-size: 0.85rem;
 }
+
 .actions-cell {
   display: flex;
   gap: 0.5rem;
 }
+
 .action-btn {
-  background: none;
+  width: 36px;
+  height: 36px;
   border: none;
-  font-size: 1.2rem;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 0.3rem;
-  border-radius: 6px;
+  font-size: 1rem;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.view-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
 .view-btn:hover {
-  background: #dbeafe;
-  transform: scale(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
 .delete-btn:hover {
-  background: #fee2e2;
-  transform: scale(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -517,74 +850,74 @@ const Admin = () => {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
+  padding: 2rem;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.feedback-modal {
+
+.feedback-modal, .create-admin-modal {
   background: white;
   border-radius: 20px;
-  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   width: 90vw;
   max-width: 500px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  max-height: 80vh;
+  overflow-y: auto;
   animation: slideUp 0.3s ease-out;
 }
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
+
 .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
 }
+
 .modal-header h3 {
   color: #1f2937;
   margin: 0;
-  font-size: 1.3rem;
 }
+
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
   color: #6b7280;
-  padding: 0.2rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
+
 .close-btn:hover {
   background: #f3f4f6;
   color: #374151;
 }
+
 .modal-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 2rem;
 }
-.rating-section, .comment-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+
+.rating-section {
+  margin-bottom: 1.5rem;
 }
-.rating-section label, .comment-section label {
+
+.rating-section label {
+  display: block;
+  margin-bottom: 0.5rem;
   color: #374151;
   font-weight: 600;
-  font-size: 0.95rem;
 }
+
 .rating-stars {
   display: flex;
   gap: 0.5rem;
 }
+
 .star-btn {
   background: none;
   border: none;
@@ -593,112 +926,238 @@ const Admin = () => {
   transition: all 0.3s ease;
   opacity: 0.3;
 }
+
 .star-btn.active {
   opacity: 1;
   transform: scale(1.1);
 }
+
 .star-btn:hover {
   transform: scale(1.2);
 }
+
+.comment-section {
+  margin-bottom: 2rem;
+}
+
+.comment-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 600;
+}
+
 .comment-section textarea {
+  width: 100%;
   padding: 1rem;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.3s ease;
-  resize: vertical;
   font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  transition: all 0.3s ease;
 }
+
 .comment-section textarea:focus {
+  outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-.modal-footer {
+
+.modal-actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
 }
+
 .cancel-btn, .submit-btn {
-  padding: 0.8rem 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: none;
 }
+
 .cancel-btn {
   background: #f3f4f6;
   color: #374151;
 }
+
 .cancel-btn:hover {
   background: #e5e7eb;
 }
+
 .submit-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
+
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-@media (max-width: 900px) {
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.admin-code-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #0369a1;
+}
+
+.hint-icon {
+  font-size: 1rem;
+}
+
+.error-message {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-icon {
+  font-size: 1.2rem;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 1024px) {
   .admin-content {
-    max-width: 98vw;
-    padding: 1.2rem 0.5rem;
+    padding: 100px 1.5rem 2rem;
   }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .table-header, .table-row {
+    grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-header h2 {
+    font-size: 2.5rem;
+  }
+  
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .admin-header h2 {
+  
+  .stat-card {
+    padding: 1.5rem;
+  }
+  
+  .stat-value {
     font-size: 2rem;
   }
+  
   .table-header, .table-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  .header-cell, .cell {
-    padding: 0.5rem 0;
+  
+  .header-cell {
+    display: none;
   }
-  .user-cell {
+  
+  .table-row {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  .user-cell, .contact-cell, .cell, .actions-cell {
     justify-content: center;
+    text-align: center;
   }
-  .contact-cell {
-    justify-content: center;
-  }
-  .actions-cell {
-    justify-content: center;
-  }
+  
   .contact-info {
     align-items: center;
   }
-  .contact-item {
+  
+  .actions-cell {
     justify-content: center;
+    gap: 1rem;
   }
 }
-@media (max-width: 600px) {
+
+@media (max-width: 480px) {
   .admin-content {
-    padding: 1rem 0.2rem;
+    padding: 100px 1rem 2rem;
   }
+  
   .admin-header h2 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
-  .header-icon {
-    font-size: 2.5rem;
-  }
+  
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  .stat-card {
-    padding: 1rem;
-  }
-  .stat-value {
-    font-size: 1.5rem;
-  }
-  .feedback-modal {
-    margin: 1rem;
+  
+  .admin-section {
     padding: 1.5rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
   }
 }
 `}</style>

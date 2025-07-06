@@ -39,8 +39,13 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      const result = await login(formData.email, formData.password);
+      
+      if (result.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       setErrors({ general: 'Invalid email or password' });
     } finally {
@@ -164,7 +169,7 @@ const Login = () => {
 }
 .login-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 .header-icon {
   font-size: 3rem;
@@ -198,17 +203,9 @@ const Login = () => {
   padding: 1rem 1.5rem;
   margin-bottom: 2rem;
   font-weight: 500;
-  text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  animation: shake 0.5s ease-in-out;
-}
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
 }
 .error-icon {
   font-size: 1.2rem;
@@ -217,7 +214,6 @@ const Login = () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 .form-group {
   display: flex;
@@ -230,34 +226,29 @@ const Login = () => {
   font-size: 0.95rem;
 }
 .form-group input {
-  padding: 1rem 1.2rem;
+  padding: 1rem 1.25rem;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 1rem;
-  outline: none;
   transition: all 0.3s ease;
-  background: #f9fafb;
+  background: white;
 }
 .form-group input:focus {
+  outline: none;
   border-color: #667eea;
-  background: white;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-.form-group input::placeholder {
-  color: #9ca3af;
 }
 .form-error {
   color: #dc2626;
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 .login-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  color: white;
   border: none;
   padding: 1rem 2rem;
-  border-radius: 16px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -266,17 +257,15 @@ const Login = () => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   margin-top: 1rem;
 }
 .login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 .login-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  transform: none;
 }
 .btn-icon {
   font-size: 1.2rem;
@@ -303,9 +292,8 @@ const Login = () => {
   margin-top: 2rem;
 }
 .footer-text {
-  color: #6b7280;
-  font-size: 0.95rem;
-  margin: 0;
+  color: #64748b;
+  font-size: 1rem;
 }
 .footer-link {
   color: #667eea;
@@ -315,13 +303,12 @@ const Login = () => {
 }
 .footer-link:hover {
   color: #5a67d8;
-  text-decoration: underline;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .login-content {
     padding: 2rem 1.5rem;
-    margin: 1rem;
+    width: 95vw;
   }
   .login-header h2 {
     font-size: 2rem;
@@ -329,9 +316,24 @@ const Login = () => {
   .header-icon {
     font-size: 2.5rem;
   }
+}
+
+@media (max-width: 480px) {
+  .login-content {
+    padding: 1.5rem 1rem;
+  }
+  .login-header h2 {
+    font-size: 1.8rem;
+  }
+  .header-icon {
+    font-size: 2rem;
+  }
+  .form-group input {
+    padding: 0.875rem 1rem;
+  }
   .login-btn {
+    padding: 0.875rem 1.5rem;
     font-size: 1rem;
-    padding: 0.8rem 1.5rem;
   }
 }
 `}</style>

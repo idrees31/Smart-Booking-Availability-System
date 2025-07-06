@@ -24,13 +24,17 @@ const Signup = () => {
 
   const validateForm = () => {
     const newErrors = {};
+    
     if (!formData.name) newErrors.name = 'Name is required';
     if (!formData.email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
     if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
-    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
     return newErrors;
   };
 
@@ -49,7 +53,7 @@ const Signup = () => {
       await signup(formData.email, formData.password, formData.name);
       navigate('/dashboard');
     } catch (error) {
-      setErrors({ general: 'Failed to create account. Please try again.' });
+      setErrors({ general: error.message });
     } finally {
       setIsLoading(false);
     }
@@ -60,9 +64,9 @@ const Signup = () => {
       <div className="signup-content">
         <div className="signup-header">
           <div className="header-icon">🌟</div>
-          <h2>Join Us Today</h2>
+          <h2>Join Smart Booking</h2>
           <p className="header-subtitle">
-            Create your account to get started
+            Create your account to start booking
           </p>
         </div>
 
@@ -97,7 +101,7 @@ const Signup = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email address"
+              placeholder="Enter your email"
               required
               autoComplete="email"
             />
@@ -112,7 +116,7 @@ const Signup = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Create a strong password"
+              placeholder="Create a password"
               required
               autoComplete="new-password"
             />
@@ -142,7 +146,7 @@ const Signup = () => {
             {isLoading ? (
               <div className="loading-spinner">
                 <div className="spinner"></div>
-                <span>Creating account...</span>
+                <span>Creating Account...</span>
               </div>
             ) : (
               <>
@@ -201,7 +205,7 @@ const Signup = () => {
 }
 .signup-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 .header-icon {
   font-size: 3rem;
@@ -235,17 +239,9 @@ const Signup = () => {
   padding: 1rem 1.5rem;
   margin-bottom: 2rem;
   font-weight: 500;
-  text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  animation: shake 0.5s ease-in-out;
-}
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
 }
 .error-icon {
   font-size: 1.2rem;
@@ -254,7 +250,6 @@ const Signup = () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 .form-group {
   display: flex;
@@ -267,34 +262,29 @@ const Signup = () => {
   font-size: 0.95rem;
 }
 .form-group input {
-  padding: 1rem 1.2rem;
+  padding: 1rem 1.25rem;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 1rem;
-  outline: none;
   transition: all 0.3s ease;
-  background: #f9fafb;
+  background: white;
 }
 .form-group input:focus {
+  outline: none;
   border-color: #667eea;
-  background: white;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-.form-group input::placeholder {
-  color: #9ca3af;
 }
 .form-error {
   color: #dc2626;
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 .signup-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  color: white;
   border: none;
   padding: 1rem 2rem;
-  border-radius: 16px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -303,17 +293,15 @@ const Signup = () => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   margin-top: 1rem;
 }
 .signup-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 .signup-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  transform: none;
 }
 .btn-icon {
   font-size: 1.2rem;
@@ -340,9 +328,8 @@ const Signup = () => {
   margin-top: 2rem;
 }
 .footer-text {
-  color: #6b7280;
-  font-size: 0.95rem;
-  margin: 0;
+  color: #64748b;
+  font-size: 1rem;
 }
 .footer-link {
   color: #667eea;
@@ -352,13 +339,12 @@ const Signup = () => {
 }
 .footer-link:hover {
   color: #5a67d8;
-  text-decoration: underline;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .signup-content {
     padding: 2rem 1.5rem;
-    margin: 1rem;
+    width: 95vw;
   }
   .signup-header h2 {
     font-size: 2rem;
@@ -366,9 +352,24 @@ const Signup = () => {
   .header-icon {
     font-size: 2.5rem;
   }
+}
+
+@media (max-width: 480px) {
+  .signup-content {
+    padding: 1.5rem 1rem;
+  }
+  .signup-header h2 {
+    font-size: 1.8rem;
+  }
+  .header-icon {
+    font-size: 2rem;
+  }
+  .form-group input {
+    padding: 0.875rem 1rem;
+  }
   .signup-btn {
+    padding: 0.875rem 1.5rem;
     font-size: 1rem;
-    padding: 0.8rem 1.5rem;
   }
 }
 `}</style>

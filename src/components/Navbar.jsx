@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, isAdmin } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
@@ -58,13 +58,15 @@ const Navbar = () => {
                 <span className="link-icon">📅</span>
                 <span>Book</span>
               </Link>
-              <Link 
-                to="/admin" 
-                className={`nav-link ${isActive('/admin') ? 'active' : ''}`}
-              >
-                <span className="link-icon">👑</span>
-                <span>Admin</span>
-              </Link>
+              {isAdmin() && (
+                <Link 
+                  to="/admin" 
+                  className={`nav-link admin-link ${isActive('/admin') ? 'active' : ''}`}
+                >
+                  <span className="link-icon">👑</span>
+                  <span>Admin</span>
+                </Link>
+              )}
               <button onClick={logout} className="nav-link logout-btn">
                 <span className="link-icon">🚪</span>
                 <span>Logout</span>
@@ -178,6 +180,19 @@ const Navbar = () => {
 .nav-link.active::before {
   opacity: 1;
 }
+.admin-link {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.admin-link:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+.admin-link.active {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
 .link-icon {
   font-size: 1.1rem;
   transition: transform 0.3s ease;
@@ -203,9 +218,6 @@ const Navbar = () => {
   .nav-content {
     padding: 0 1rem;
   }
-  .brand-text {
-    display: none;
-  }
   .nav-links {
     gap: 0.5rem;
   }
@@ -213,23 +225,27 @@ const Navbar = () => {
     padding: 0.5rem 0.8rem;
     font-size: 0.9rem;
   }
-  .link-icon {
-    font-size: 1rem;
+  .brand-text {
+    font-size: 1.1rem;
   }
 }
+
 @media (max-width: 480px) {
-  .nav-content {
-    padding: 0 0.5rem;
-  }
   .nav-links {
     gap: 0.3rem;
   }
   .nav-link {
     padding: 0.4rem 0.6rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   .link-icon {
-    font-size: 0.9rem;
+    font-size: 1rem;
+  }
+  .brand-icon {
+    font-size: 1.3rem;
+  }
+  .brand-text {
+    font-size: 1rem;
   }
 }
 `}</style>
