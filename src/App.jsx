@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -8,10 +8,19 @@ import Dashboard from './pages/Dashboard';
 import Booking from './pages/Booking';
 import Admin from './pages/Admin';
 import { AuthProvider, useAuth } from './components/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // Create contexts
 export const UsersContext = createContext();
 export const BookingsContext = createContext();
+
+// Minimal fade-only animation
+const pageVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+const pageTransition = { duration: 0.35, ease: 'easeInOut' };
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -28,6 +37,66 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   return children;
 };
 
+// Animated Routes Wrapper
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={
+          <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+            <Landing />
+          </motion.div>
+        } />
+        <Route path="/landing" element={
+          <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+            <Landing />
+          </motion.div>
+        } />
+        <Route path="/login" element={
+          <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+            <Login />
+          </motion.div>
+        } />
+        <Route path="/signup" element={
+          <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+            <Signup />
+          </motion.div>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+              <Profile />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+              <Dashboard />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/booking" element={
+          <ProtectedRoute>
+            <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+              <Booking />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute requireAdmin={true}>
+            <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition}>
+              <Admin />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 const App = () => {
   // Global state: registered users and bookings
   const [users, setUsers] = useState([]); // [{...profile, bookingDate, bookingSlot}]
@@ -38,45 +107,7 @@ const App = () => {
       <AuthProvider>
         <UsersContext.Provider value={{ users, setUsers }}>
           <BookingsContext.Provider value={{ bookings, setBookings }}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/landing" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/booking" 
-                element={
-                  <ProtectedRoute>
-                    <Booking />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute requireAdmin={true}>
-                    <Admin />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <AnimatedRoutes />
           </BookingsContext.Provider>
         </UsersContext.Provider>
       </AuthProvider>
