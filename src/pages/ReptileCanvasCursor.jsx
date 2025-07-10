@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 
-const SEGMENTS = 60; // Number of snake segments
+const SEGMENTS = 35; // Number of snake segments (shorter snake)
 const SEGMENT_LENGTH = 12; // Distance between segments
 
 // Particle system for trail
@@ -29,7 +29,7 @@ const SNAKE_START = '#667eea'; // Indigo
 const SNAKE_END = '#764ba2';   // Purple
 const PULSE_COLOR = '#e0e7ff'; // Light purple/white for pulse
 
-const LEG_LENGTH = 16; // Length of each spike/leg
+const LEG_LENGTH = 16; // Length of each spike/leg (restored)
 const LEGS_PER_SEGMENT = 6; // Number of spikes/legs per segment
 const LEG_ANGLE_SPREAD = Math.PI / 1.5; // Spread of spikes/legs
 
@@ -130,24 +130,6 @@ const ReptileCanvasCursor = () => {
     ctx.stroke();
     ctx.restore();
 
-    // Draw snake body circles for 3D/organic look
-    for (let i = 1; i < SEGMENTS; i++) {
-      const t = i / (SEGMENTS - 1);
-      const segColor = pulse > 0 ? PULSE_COLOR : lerpColor(SNAKE_START, SNAKE_END, t);
-      ctx.save();
-      ctx.beginPath();
-      // Make the body slightly thicker in the middle
-      const radius = 7 + 6 * Math.sin(Math.PI * t);
-      ctx.arc(points.current[i].x, points.current[i].y, radius, 0, Math.PI * 2);
-      ctx.globalAlpha = 0.22 + 0.18 * Math.sin(Math.PI * t);
-      ctx.fillStyle = segColor;
-      ctx.shadowColor = segColor;
-      ctx.shadowBlur = 8;
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.restore();
-    }
-
     // Draw head (bigger, with eyes and tongue)
     const head = points.current[0];
     const next = points.current[1];
@@ -210,24 +192,6 @@ const ReptileCanvasCursor = () => {
       );
       ctx.strokeStyle = '#ff2222';
       ctx.lineWidth = 1.1;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Draw tail (thin, last 10 segments)
-    for (let i = SEGMENTS - 10; i < SEGMENTS - 1; i++) {
-      const curr = points.current[i];
-      const next = points.current[i + 1];
-      const t = i / (SEGMENTS - 1);
-      const segColor = pulse > 0 ? PULSE_COLOR : lerpColor(SNAKE_START, SNAKE_END, t);
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(curr.x, curr.y);
-      ctx.lineTo(next.x, next.y);
-      ctx.strokeStyle = segColor;
-      ctx.lineWidth = 3;
-      ctx.shadowColor = segColor;
-      ctx.shadowBlur = 6;
       ctx.stroke();
       ctx.restore();
     }
