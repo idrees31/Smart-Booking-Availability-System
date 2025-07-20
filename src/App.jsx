@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import Booking from './pages/Booking';
 import Admin from './pages/Admin';
+import VerifyEmail from './pages/VerifyEmail';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -91,6 +92,7 @@ function AnimatedRoutes() {
             </motion.div>
           </ProtectedRoute>
         } />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>

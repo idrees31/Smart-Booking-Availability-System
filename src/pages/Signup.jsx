@@ -51,7 +51,7 @@ const Signup = () => {
     
     try {
       await signup(formData.email, formData.password, formData.name);
-      navigate('/login');
+      navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
       setErrors({ general: error.message });
     } finally {
