@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
       createdAt: new Date().toISOString()
     }
   ]);
+  const [users, setUsers] = useState([]); // Store registered users
   const navigate = useNavigate();
 
   const login = async (email, password) => {
@@ -41,10 +42,15 @@ export const AuthProvider = ({ children }) => {
       return { success: true, role: 'admin' };
     }
     
-    // Regular user login (simulate)
-    setIsLoggedIn(true);
-    setCurrentUser({ email, name: 'User', role: 'user' });
-    return { success: true, role: 'user' };
+    // Regular user login: check if user exists and password matches
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+      setIsLoggedIn(true);
+      setCurrentUser({ email: user.email, name: user.name, role: 'user' });
+      return { success: true, role: 'user' };
+    } else {
+      throw new Error('Invalid email or password');
+    }
   };
 
   const signup = async (email, password, name) => {
@@ -53,10 +59,14 @@ export const AuthProvider = ({ children }) => {
     if (existingAdmin) {
       throw new Error('Email already registered as admin');
     }
+    // Check if email is already registered as user
+    const existingUser = users.find(u => u.email === email);
+    if (existingUser) {
+      throw new Error('Email already registered');
+    }
     
     // Regular user signup
-    setIsLoggedIn(true);
-    setCurrentUser({ email, name, role: 'user' });
+    setUsers(prev => [...prev, { email, password, name, role: 'user', createdAt: new Date().toISOString() }]);
     return { success: true, role: 'user' };
   };
 
@@ -103,7 +113,9 @@ export const AuthProvider = ({ children }) => {
       logout, 
       isAdmin,
       createAdminAccount,
-      adminAccounts
+      adminAccounts,
+      users,
+      setUsers
     }}>
       {children}
     </AuthContext.Provider>
