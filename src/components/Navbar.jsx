@@ -63,7 +63,7 @@ const Navbar = () => {
                   to="/admin" 
                   className={`nav-link admin-link ${isActive('/admin') ? 'active' : ''}`}
                 >
-                  <span className="link-icon">👑</span>
+                  <span className="link-icon">🛡️</span>
                   <span>Admin</span>
                 </Link>
               )}
