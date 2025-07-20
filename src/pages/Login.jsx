@@ -61,7 +61,7 @@ const Login = () => {
           <div className="header-icon">🔐</div>
           <h2>Welcome Back</h2>
           <p className="header-subtitle">
-            Sign in to your account to continue
+            Log in to your account to continue
           </p>
         </div>
 
@@ -112,6 +112,9 @@ const Login = () => {
               </button>
             </div>
             {errors.password && <span className="form-error">{errors.password}</span>}
+            <div className="forgot-password-link">
+              <Link to="/forgot-password">Forgot Password?</Link>
+            </div>
           </div>
 
           <button 
@@ -122,12 +125,12 @@ const Login = () => {
             {isLoading ? (
               <div className="loading-spinner">
                 <div className="spinner"></div>
-                <span>Signing in...</span>
+                <span>Logging in...</span>
               </div>
             ) : (
               <>
                 <span className="btn-icon">🚀</span>
-                <span>Sign In</span>
+                <span>Login</span>
               </>
             )}
           </button>
@@ -320,21 +323,47 @@ const Login = () => {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+}
+.password-input-wrapper input[type="password"],
+.password-input-wrapper input[type="text"] {
+  width: 100%;
+  padding-right: 2.5rem;
+  box-sizing: border-box;
 }
 .show-password-btn {
   background: none;
   border: none;
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.2rem;
   cursor: pointer;
   color: #64748b;
   padding: 0 0.2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .show-password-btn:focus {
   outline: 2px solid #667eea;
+}
+.forgot-password-link {
+  margin-top: 0.5rem;
+  text-align: right;
+}
+.forgot-password-link a {
+  color: #667eea;
+  font-size: 0.95rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.forgot-password-link a:hover {
+  color: #764ba2;
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

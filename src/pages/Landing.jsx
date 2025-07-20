@@ -177,7 +177,7 @@ const Landing = () => {
                 <div className="option-icon">👋</div>
                 <div className="option-content">
                   <h3>I have an account</h3>
-                  <p>Welcome back! Sign in to access your dashboard and bookings.</p>
+                  <p>Welcome back! Log in to access your dashboard and bookings.</p>
                 </div>
                 <div className="option-arrow">→</div>
               </div>

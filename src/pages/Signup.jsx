@@ -185,7 +185,7 @@ const Signup = () => {
           <p className="footer-text">
             Already have an account?{' '}
             <Link to="/login" className="footer-link">
-              Sign in here
+              Login here
             </Link>
           </p>
         </div>
@@ -368,18 +368,29 @@ const Signup = () => {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+}
+.password-input-wrapper input[type="password"],
+.password-input-wrapper input[type="text"] {
+  width: 100%;
+  padding-right: 2.5rem;
+  box-sizing: border-box;
 }
 .show-password-btn {
   background: none;
   border: none;
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.2rem;
   cursor: pointer;
   color: #64748b;
   padding: 0 0.2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .show-password-btn:focus {
   outline: 2px solid #667eea;
