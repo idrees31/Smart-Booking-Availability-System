@@ -19,6 +19,15 @@ async function hashPassword(password) {
   return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function getUsersFromStorage() {
+  try {
+    const data = localStorage.getItem('users');
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -32,8 +41,13 @@ export const AuthProvider = ({ children }) => {
       emailVerified: true
     }
   ]);
-  const [users, setUsers] = useState([]); // Store registered users
+  const [users, setUsers] = useState(getUsersFromStorage()); // Store registered users
   const navigate = useNavigate();
+
+  // Save users to localStorage whenever they change
+  React.useEffect(() => {
+    localStorage.setItem('users', JSON.stringify(users));
+  }, [users]);
 
   // Simulate email verification (frontend demo)
   const verifyEmail = (email) => {
