@@ -51,7 +51,7 @@ const Signup = () => {
     
     try {
       await signup(formData.email, formData.password, formData.name);
-      navigate('/dashboard');
+      navigate('/login');
     } catch (error) {
       setErrors({ general: error.message });
     } finally {
