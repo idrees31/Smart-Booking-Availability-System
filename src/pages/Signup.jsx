@@ -185,6 +185,18 @@ const Signup = () => {
             {errors.confirmPassword && <span className="form-error">{errors.confirmPassword}</span>}
           </div>
 
+          <div className="terms-checkbox">
+            <label>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+                required
+              />
+              I agree to the <a href="#" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="#" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            </label>
+            {errors.agreed && <span className="form-error">{errors.agreed}</span>}
+          </div>
           <button 
             type="submit" 
             className="signup-btn"
@@ -202,18 +214,6 @@ const Signup = () => {
               </>
             )}
           </button>
-         <div className="terms-checkbox">
-           <label>
-             <input
-               type="checkbox"
-               checked={agreed}
-               onChange={e => setAgreed(e.target.checked)}
-               required
-             />
-             I agree to the <a href="#" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="#" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-           </label>
-           {errors.agreed && <span className="form-error">{errors.agreed}</span>}
-         </div>
         </form>
 
         <div className="signup-footer">
