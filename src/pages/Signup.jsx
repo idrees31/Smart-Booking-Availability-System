@@ -16,6 +16,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -51,6 +52,9 @@ const Signup = () => {
     }
     if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (!agreed) {
+      newErrors.agreed = 'You must agree to the Terms of Service and Privacy Policy';
     }
     
     return newErrors;
@@ -198,6 +202,18 @@ const Signup = () => {
               </>
             )}
           </button>
+         <div className="terms-checkbox">
+           <label>
+             <input
+               type="checkbox"
+               checked={agreed}
+               onChange={e => setAgreed(e.target.checked)}
+               required
+             />
+             I agree to the <a href="#" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="#" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+           </label>
+           {errors.agreed && <span className="form-error">{errors.agreed}</span>}
+         </div>
         </form>
 
         <div className="signup-footer">
@@ -422,6 +438,29 @@ const Signup = () => {
 .password-strength.weak { color: #dc2626; }
 .password-strength.medium { color: #f59e42; }
 .password-strength.strong { color: #059669; }
+
+.terms-checkbox {
+  margin-top: 1.2rem;
+  font-size: 0.97rem;
+  color: #374151;
+}
+.terms-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.terms-checkbox input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: #667eea;
+}
+.terms-checkbox a {
+  color: #667eea;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.terms-checkbox a:hover {
+  color: #764ba2;
+}
 
 @media (max-width: 768px) {
   .signup-content {
