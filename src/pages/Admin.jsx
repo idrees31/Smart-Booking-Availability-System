@@ -170,7 +170,7 @@ const Admin = () => {
       <Navbar />
       <div className="admin-content">
         <div className="admin-header">
-          <div className="header-icon">👑</div>
+          <div className="header-icon">🛡️</div>
           <h2>Admin Dashboard</h2>
           <p className="header-subtitle">
             Manage users and monitor system activity
