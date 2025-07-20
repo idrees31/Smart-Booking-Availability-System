@@ -15,6 +15,7 @@ const Signup = () => {
   const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -22,7 +23,22 @@ const Signup = () => {
       [e.target.name]: e.target.value
     });
     setErrors({ ...errors, [e.target.name]: '' });
+    if (e.target.name === 'password') {
+      setPasswordStrength(getPasswordStrength(e.target.value));
+    }
   };
+
+  function getPasswordStrength(password) {
+    if (!password) return '';
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    if (score <= 1) return 'Weak';
+    if (score === 2 || score === 3) return 'Medium';
+    return 'Strong';
+  }
 
   const validateForm = () => {
     const newErrors = {};
@@ -133,6 +149,9 @@ const Signup = () => {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
+            {passwordStrength && (
+              <div className={`password-strength ${passwordStrength.toLowerCase()}`}>{passwordStrength} password</div>
+            )}
             {errors.password && <span className="form-error">{errors.password}</span>}
           </div>
 
@@ -395,6 +414,14 @@ const Signup = () => {
 .show-password-btn:focus {
   outline: 2px solid #667eea;
 }
+.password-strength {
+  margin-top: 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.password-strength.weak { color: #dc2626; }
+.password-strength.medium { color: #f59e42; }
+.password-strength.strong { color: #059669; }
 
 @media (max-width: 768px) {
   .signup-content {
