@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Booking from './pages/Booking';
 import Admin from './pages/Admin';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -93,6 +94,7 @@ function AnimatedRoutes() {
           </ProtectedRoute>
         } />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
